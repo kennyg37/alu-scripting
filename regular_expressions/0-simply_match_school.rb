@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
-argument = ARGV[0]
-match = argument.match(/School/)
+input_string = ARGV[0]
+match = input_string.match(/School/)  
 if match
-    puts "School$"
+  puts "School$"
 else
-    puts ""
+  puts "$"
 end
