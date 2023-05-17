@@ -4,5 +4,5 @@ match = argument.match(/School/)
 if match
     puts "School$"
 else
-    puts "$"
+    puts ""
 end
