@@ -2,7 +2,7 @@
 input_string = ARGV[0]
 match = input_string.match(/School/)  
 if match
-  puts "School"
+  print matches.join('School')
 else
   puts ""
 end
