@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 argument = ARGV[0]
 match = argument.match(/School/)
-if match:
+if match
     puts "School$"
-else:
+else
     puts "$"
 end
