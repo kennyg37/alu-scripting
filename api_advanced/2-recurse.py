@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """ This module uses recursion to get hot articles"""
 import requests
+import praw
 
 
 def recurse(subreddit, hot_list=[], after=None):
