@@ -4,6 +4,7 @@
 
 import json
 import requests
+import praw
 
 
 def count_words(subreddit, word_list, after="", count=[]):
