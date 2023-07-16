@@ -1,72 +1,44 @@
 #!/usr/bin/python3
-
-"""search post function"""
-
-import json
-import operator
+"""
+Function that queries the Reddit API and prints
+the top ten hot posts of a subreddit
+"""
 import requests
+import sys
 
 
-def count_words(subreddit, word_list, after=None):
-    """get all the keyword count"""
-
-    if len(word_list) == 0:
-        print(None)
+def add_title(hot_list, hot_posts):
+    if len(hot_posts) == 0:
         return
+    hot_list.append(hot_posts[0]['data']['title'])
+    hot_posts.pop(0)
+    add_title(hot_list, hot_posts)
+
+
+def recurse(subreddit, hot_list=[], after=None):
+    agent = 'Mozilla/5.0'
+    headers = {
+        'User-Agent': agent
+    }
+
+    params = {
+        'after': after
+    }
+
     url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
-    headers = {"User-Agent": "Mozilla/5.0"}
-    result = requests.get(url,
-                          headers=headers,
-                          params={"after": after},
-                          allow_redirects=False)
-    if result.status_code != 200:
+    response = requests.get(url,
+                            headers=headers,
+                            params=params,
+                            allow_redirects=False)
+
+    if response.status_code != 200:
         return None
-    body = json.loads(result.text)
-    if body["data"]["after"] is not None:
-        newlist = word_list
-        if type(word_list[0]) is str:
-            temp = []
-            for i in word_list:
-                if not any(j['key'].lower() == i.lower() for j in temp):
-                    temp.append({"key": i.lower(), "count": 0, "times": 1})
-                else:
-                    item = list(filter(
-                                lambda search: search['key'] == i.lower(),
-                                temp))
-                    if len(item) > 0:
-                        item[0]["times"] = item[0]["times"] + 1
-            newlist = temp
-        for i in newlist:
-            for j in body["data"]["children"]:
-                for k in j["data"]["title"].lower().split():
-                    if i["key"] == k:
-                        i["count"] = i["count"] + 1
-        return count_words(subreddit, newlist, body["data"]["after"])
+
+    reddit = response.json()
+    hot_posts = reddit['data']['children']
+    add_title(hot_list, hot_posts)
+    after = reddit['data']['after']
+    if not after:
+        return hot_list
     else:
-        newlist = word_list
-        if type(word_list[0]) is str:
-            temp = []
-            for i in word_list:
-                if not any(j['key'].lower() == i.lower() for j in temp):
-                    temp.append({"key": i.lower(), "count": 0, "times": 1})
-                else:
-                    item = list(filter(
-                                lambda search: search['key'] == i.lower(),
-                                temp))
-                    if len(item) > 0:
-                        item[0]["times"] = item[0]["times"] + 1
-            newlist = temp
-        for i in newlist:
-            for j in body["data"]["children"]:
-                for k in j["data"]["title"].lower().split():
-                    if i["key"] == k:
-                        i["count"] = i["count"] + 1
-        key = operator.itemgetter("key")
-        sorted_list = sorted(word_list, key=key)
-        key = operator.itemgetter("count")
-        sorted_list = sorted(sorted_list, key=key, reverse=True)
-        word_list = sorted_list
-        for i in sorted_list:
-            if i["count"] > 0:
-                print("{}: {}".format(i["key"], i["count"] * i["times"]))
-        return
+        return recurse(subreddit, hot_list=hot_list, after=after)
